@@ -4,8 +4,6 @@ from numpy.typing import ArrayLike, NDArray
 
 
 
-rnd = np.random.default_rng()
-
 # ширина слоя
 SIZE_IN = 4  # входной слой
 SIZE_D1 = 3  # 1-й скрытый слой
@@ -61,4 +59,5 @@ def net (input: NDArray, list_wb: List[NDArray], activ_func: Callable) -> None:
 
     print(res)
 
-net (inp_arr, list_wb, np.tanh)
+net (inp_arr, list_wb, test_activ_func) # right res = [[519][1892]]
+net (inp_arr, list_wb, np.tanh) # right res = [ [0.76159416] [0.99998747] ]
