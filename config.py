@@ -14,9 +14,9 @@ SLICE_MAST = slice(1)
 SLICE_RANK  = slice(1,3)
 SLICE_WO_VISIBLE = slice(0,-1)
 
-INDX_FIRST_MY_CARDS = 42 # wil be included to slice
-INDX_LAST_MY_CARDS = 42 + 36 # will be not included to slice
-SLICE_MY_CARDS = slice(INDX_FIRST_MY_CARDS, INDX_LAST_MY_CARDS)
+#INDX_FIRST_MY_CARDS = 42 # wil be included to slice
+#INDX_LAST_MY_CARDS = 42 + 36 # will be not included to slice
+#SLICE_MY_CARDS = slice(INDX_FIRST_MY_CARDS, INDX_LAST_MY_CARDS)
 
 LEN_INPT_VECTOR = 298 # длина входного вектора
 

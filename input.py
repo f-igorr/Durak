@@ -69,9 +69,9 @@ def make_input (my_indx: int, HANDS: List[List[str]], KOLODA: List[str], TABLE: 
     inpt.extend (bin_qty_table)
     inpt.extend (bin_qty_bits)
     inpt.extend (bin_qty_koloda)
-    assert len(inpt) == (len(HANDS) + 3) * LEN_BIN_QTY # 42
+    #assert len(inpt) == (len(HANDS) + 3) * LEN_BIN_QTY # 42
     inpt.extend (bin_hands)
-    assert len(inpt) == (len(HANDS) + 3) * LEN_BIN_QTY + len(HANDS) * 36 # 42+144=186
+    #assert len(inpt) == (len(HANDS) + 3) * LEN_BIN_QTY + len(HANDS) * 36 # 42+144=186
     inpt.extend (bin_table)
     inpt.extend (bin_bits)
     inpt.extend (bin_last_card)

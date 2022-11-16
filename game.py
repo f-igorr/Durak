@@ -97,15 +97,24 @@ def _count_max_attacks (HANDS, defender: int) -> int:
     count_defender = count_list.pop(defender)
     return min(count_defender, sum(count_list))
 
-def _check_posibility_attack (hand: List[str],TABLE) -> bool:
+#def _check_posibility_attack (hand: List[str],TABLE) -> bool:
+#    assert len(TABLE) > 0, 'ERROR TABLE EMPTY !!!'
+#    table_rank: List[str] = [] # list of RANK in TABLE
+#    for c in TABLE:
+#        table_rank.append(c[SLICE_RANK])
+#    for card in hand:
+#        if card[SLICE_RANK] in table_rank:
+#            return True
+#    return False
+
+def pos_attack_card (hand: List[str],TABLE) -> List[str]:
+    res = []
     assert len(TABLE) > 0, 'ERROR TABLE EMPTY !!!'
-    table_rank: List[str] = [] # list of RANK in TABLE
-    for c in TABLE:
-        table_rank.append(c[SLICE_RANK])
+    table_ranks = { x[SLICE_RANK] for x in TABLE }
     for card in hand:
-        if card[SLICE_RANK] in table_rank:
-            return True
-    return False
+        if card[SLICE_RANK] in table_ranks:
+            res.append(card)
+    return res
 
 def attack (attacker: int,HANDS,TABLE) -> None:
     hand = HANDS[attacker]
@@ -175,13 +184,15 @@ def play_round (hands: List[int],HANDS,TABLE,TRUMP) -> bool:
     max_attacks: int = _count_max_attacks (HANDS, defender)
     for _ in range(max_attacks):
         if len(TABLE) == 0: # if first attack
+            availble_cards = HANDS[attacker]
             attack (attacker,HANDS,TABLE) # add card to TABLE
             if not defend (HANDS[defender],TABLE,TRUMP): # if def bad
                 return False
         else: # not first attack
             count_no_card = 0
             for indx_hand in seq_attackers: # endless loop !!!
-                if _check_posibility_attack (HANDS[indx_hand],TABLE):
+                availble_cards = pos_attack_card (HANDS[indx_hand],TABLE)
+                if availble_cards:
                     attack (indx_hand,HANDS,TABLE) # add card to TABLE
                     if not defend (HANDS[defender],TABLE,TRUMP): # if def bad
                         return False
@@ -206,12 +217,12 @@ def get_cards_from_koloda_defender (hands: List[int],HANDS,KOLODA) -> None:
     while len(HANDS[hands[1]]) < 6 and len(KOLODA):
         HANDS[hands[1]].append(KOLODA.pop(0))
 
-def attack_by_net (id, HANDS,KOLODA, TABLE, BITS, LAST_CARD, TRUMP, BRAINS_ATTACK):
+def attack_by_net (id, av_cards, HANDS, KOLODA, TABLE, BITS, LAST_CARD, TRUMP, BRAINS_ATTACK):
     # make input_vectior and convert to array
     input_array = make_input (id, HANDS,KOLODA, TABLE, BITS, LAST_CARD, TRUMP)
     # находим мой атакующий мозг
     brain = BRAINS_ATTACK [id] #
     # прогнать входной вектор через мозг 
-    indx_card = think (input_array, brain, activate=np.tanh)
+    indx_card = think (av_cards, input_array, brain, activate=np.tanh)
 
     # ДОПИСАТЬ 
