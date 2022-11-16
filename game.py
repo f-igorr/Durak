@@ -2,6 +2,9 @@ import random
 from typing import Iterable, List, Iterator, Tuple
 from config import *
 from func import circle_generator
+from input import make_input
+from net import think
+import numpy as np
 
 
 def deal_cards (HANDS, KOLODA, TABLE, BITS) -> Tuple[str,str]:
@@ -202,3 +205,13 @@ def get_cards_from_koloda_defender (hands: List[int],HANDS,KOLODA) -> None:
     """ добор карт из колоды после хода (defender) """
     while len(HANDS[hands[1]]) < 6 and len(KOLODA):
         HANDS[hands[1]].append(KOLODA.pop(0))
+
+def attack_by_net (id, HANDS,KOLODA, TABLE, BITS, LAST_CARD, TRUMP, BRAINS_ATTACK):
+    # make input_vectior and convert to array
+    input_array = make_input (id, HANDS,KOLODA, TABLE, BITS, LAST_CARD, TRUMP)
+    # находим мой атакующий мозг
+    brain = BRAINS_ATTACK [id] #
+    # прогнать входной вектор через мозг 
+    indx_card = think (input_array, brain, activate=np.tanh)
+
+    # ДОПИСАТЬ 

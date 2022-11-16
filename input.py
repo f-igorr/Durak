@@ -1,6 +1,8 @@
-#import numpy as np
 from typing import List
 from func import convert_int_to_list_bin, convert_listcard_to_binlist, circle_gen_with_first, convert_mastcard_to_binlist
+from config import *
+import numpy as np
+from numpy.typing import NDArray
 
 # кодируем входные данные для НС
 # всё кодируем в 0 или 1
@@ -13,7 +15,23 @@ from func import convert_int_to_list_bin, convert_listcard_to_binlist, circle_ge
 # послед карта в колоде
 # козырь [0,0,1,0]
 
-def make_input (my_indx: int, HANDS: List[List[str]], KOLODA: List[str], TABLE: List[str], BITS: List[str], LAST_CARD: str,TRUMP: str) -> List[int]:
+# входной вектор: длина 298 
+# кол-во карт у всех игроков : длина =  6 (кол-во на руке) * 4 (игорков) = 24 
+# кол-во карт на столе: длина = 6 * 1 = 6
+# кол-во карт в отбое: длина = 6 * 1 = 6
+# кол-во карт в ост колоде: длина = 6 * 1 = 6
+# мои карты и известные карты игроков: длина = 36 * 4 = 144
+# карты на столе: длина = 36 * 1 = 36
+# карты в отбое: длина = 36 * 1 = 36
+# последняя карта в колоде: длина = 36 * 1 = 36
+# масть козырей: длина = 4 * 1 = 4
+
+
+# ДОБАВИТЬ В ВХ ВЕКТОР ЛИСТ МОИХ КАРТ , КОТРЫМИ ВОЗМОЖЕН ХОД ?????
+
+
+
+def make_input (my_indx: int, HANDS: List[List[str]], KOLODA: List[str], TABLE: List[str], BITS: List[str], LAST_CARD: str,TRUMP: str) -> NDArray:
     ''' формирование входных данных для мозга (НС) '''
     inpt = []
     indx_hands = range(len(HANDS))
@@ -51,12 +69,16 @@ def make_input (my_indx: int, HANDS: List[List[str]], KOLODA: List[str], TABLE: 
     inpt.extend (bin_qty_table)
     inpt.extend (bin_qty_bits)
     inpt.extend (bin_qty_koloda)
+    assert len(inpt) == (len(HANDS) + 3) * LEN_BIN_QTY # 42
     inpt.extend (bin_hands)
+    assert len(inpt) == (len(HANDS) + 3) * LEN_BIN_QTY + len(HANDS) * 36 # 42+144=186
     inpt.extend (bin_table)
     inpt.extend (bin_bits)
     inpt.extend (bin_last_card)
     inpt.extend (bin_trump)
 
-    print('\n INPT \n', inpt)
+    assert len(inpt) == LEN_INPT_VECTOR
 
-    return inpt
+    #print('\n INPT \n', inpt)
+
+    return np.array(inpt, dtype=int).reshape(SHAPE_IN)
