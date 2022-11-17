@@ -25,10 +25,12 @@ LEN_INPT_VECTOR = 298 # длина входного вектора
 SIZE_IN = 2  # входной слой
 SIZE_D1 = 3  # 1-й скрытый слой
 SIZE_D2 = 2  # 2-й скрытый слой
-SIZE_OUT = 1 # выходной слой
+SIZE_OUT = 37 # выходной слой 36 + 1 = 37 (+1 чтобы решать ходить/не ходить)
 
 # форма слоя
 SHAPE_IN      = (SIZE_IN , 1) # input data
 SHAPE_DENSE_1 = (SIZE_D1 , SIZE_IN) # part of brain
 SHAPE_DENSE_2 = (SIZE_D2 , SIZE_D1) # part of brain
 SHAPE_OUT     = (SIZE_OUT, SIZE_D2) # part of brain
+
+PROB_MOVE = 0.5 # если НС выдает больше 0,5 то делаем ход

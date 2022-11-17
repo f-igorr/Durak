@@ -1,6 +1,11 @@
 
-a = [0,1,1,2,3]
+from game import put_card_on_table
 
-s = {x for x in a}
+TABLE = []
+HAND = ['a06N', 's07N', 'd08N', 'f10N']
+HAND.index()
 
-print(s)
+put_card_on_table (HAND, 1, TABLE)
+
+print(TABLE)
+print(HAND)
