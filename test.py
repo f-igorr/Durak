@@ -1,11 +1,19 @@
+li = [0,1,2,3]
+itli = iter(li)
 
-from game import put_card_on_table
+print('li')
+print('yes __iter__' if '__iter__' in li.__dir__() else 'no __iter__')
+print('yes __next__' if '__next__' in li.__dir__() else 'no __next__')
 
-TABLE = []
-HAND = ['a06N', 's07N', 'd08N', 'f10N']
-HAND.index()
+print('itli')
+print('yes __iter__' if '__iter__' in itli.__dir__() else 'no __iter__')
+print('yes __next__' if '__next__' in itli.__dir__() else 'no __next__')
 
-put_card_on_table (HAND, 1, TABLE)
+s = 'qwerty'
+s = iter(s)
+print('s')
+print('yes __iter__' if '__iter__' in s.__dir__() else 'no __iter__')
+print('yes __next__' if '__next__' in s.__dir__() else 'no __next__')
 
-print(TABLE)
-print(HAND)
+print(next(s))
+print(next(s))

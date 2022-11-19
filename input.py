@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, NamedTuple
 from func import convert_int_to_list_bin, convert_listcard_to_binlist, circle_gen_with_first, convert_mastcard_to_binlist
 from config import *
 import numpy as np
@@ -31,39 +31,40 @@ from numpy.typing import NDArray
 
 
 
-def make_input (my_indx: int, HANDS: List[List[str]], KOLODA: List[str], TABLE: List[str], BITS: List[str], LAST_CARD: str,TRUMP: str) -> NDArray:
+#def make_input (my_indx: int, HANDS: List[List[str]], KOLODA: List[str], TABLE: List[str], BITS: List[str], LAST_CARD: str,TRUMP: str) -> NDArray:
+def make_input (my_indx: int, env: NamedTuple) -> NDArray:
     ''' формирование входных данных для мозга (НС) '''
     inpt = []
-    indx_hands = range(len(HANDS))
+    indx_hands = range(len(env.HANDS))
     # кол-во карт : у меня, след игрок, след игрок, след игрок, ...
     # кодируем кол-во в лист бинарного представления числа
     circle_seq_ind_hands = circle_gen_with_first (indx_hands, my_indx) # круговая последов-ть индексов рук
     bin_qty_in_hands = []
     for _ in indx_hands:
         i = next(circle_seq_ind_hands)
-        bin_qty_in_hands.extend (convert_int_to_list_bin (len(HANDS[i]))) #  6 = [0,0,0,1,1,0]
+        bin_qty_in_hands.extend (convert_int_to_list_bin (len(env.HANDS[i]))) #  6 = [0,0,0,1,1,0]
     # кол-во карт на столе, в отбое, в колоде
-    bin_qty_table  = convert_int_to_list_bin (len(TABLE))
-    bin_qty_bits   = convert_int_to_list_bin (len(BITS))
-    bin_qty_koloda = convert_int_to_list_bin (len(KOLODA))
+    bin_qty_table  = convert_int_to_list_bin (len(env.TABLE))
+    bin_qty_bits   = convert_int_to_list_bin (len(env.BITS))
+    bin_qty_koloda = convert_int_to_list_bin (len(env.KOLODA))
     # мои карты и известные карты каждого игрока
     circle_seq_ind_hands = circle_gen_with_first (indx_hands, my_indx) # круговая последов-ть индексов рук
     bin_hands = []
     for _ in indx_hands:
         i = next(circle_seq_ind_hands)
         if i == my_indx: # first is my hand, add all cards
-            bin_hands.extend (convert_listcard_to_binlist (HANDS[i]))
+            bin_hands.extend (convert_listcard_to_binlist (env.HANDS[i]))
         else: 
-            visible_cards = [c for c in HANDS[i] if c[-1] == 'Y']
+            visible_cards = [c for c in env.HANDS[i] if c[-1] == 'Y']
             bin_hands.extend (convert_listcard_to_binlist (visible_cards))
     # карты на столе 
-    bin_table = convert_listcard_to_binlist (TABLE)
+    bin_table = convert_listcard_to_binlist (env.TABLE)
     # карты в отбое
-    bin_bits = convert_listcard_to_binlist (BITS)
+    bin_bits = convert_listcard_to_binlist (env.BITS)
     # послед карта в колоде
-    bin_last_card = convert_listcard_to_binlist ([LAST_CARD])
+    bin_last_card = convert_listcard_to_binlist ([env.LAST_CARD])
     # козырь
-    bin_trump = convert_mastcard_to_binlist (TRUMP)
+    bin_trump = convert_mastcard_to_binlist (env.TRUMP)
 
     inpt.extend (bin_qty_in_hands)
     inpt.extend (bin_qty_table)

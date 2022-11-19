@@ -1,5 +1,5 @@
 from typing import List, Iterable, Iterator, TypeVar
-from config import FULL_KOLODA, SLICE_WO_VISIBLE, LEN_BIN_QTY, MASTI
+from config import FULL_KOLODA, SLICE_WO_VISIBLE, LEN_BIN_QTY, MASTI, LEN_FULL_KOLODA
 
 T = TypeVar('T')
 
@@ -23,6 +23,8 @@ def convert_int_to_list_bin (int_val: int, len_str: int = LEN_BIN_QTY) -> List[i
 
 def convert_listcard_to_binlist (listcard: List[str]) -> List[int]:
     ''' convert list of card to binary list '''
+    if not listcard: # empty
+        return [0] * LEN_FULL_KOLODA
     assert len(listcard[0]) == 4
     ls = [c[SLICE_WO_VISIBLE] for c in listcard] # удаляем признак видимости карт
     bin_list = [1 if k in ls else 0 for k in FULL_KOLODA]
