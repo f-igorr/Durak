@@ -1,19 +1,19 @@
-li = [0,1,2,3]
-itli = iter(li)
+import numpy as np
 
-print('li')
-print('yes __iter__' if '__iter__' in li.__dir__() else 'no __iter__')
-print('yes __next__' if '__next__' in li.__dir__() else 'no __next__')
 
-print('itli')
-print('yes __iter__' if '__iter__' in itli.__dir__() else 'no __iter__')
-print('yes __next__' if '__next__' in itli.__dir__() else 'no __next__')
 
-s = 'qwerty'
-s = iter(s)
-print('s')
-print('yes __iter__' if '__iter__' in s.__dir__() else 'no __iter__')
-print('yes __next__' if '__next__' in s.__dir__() else 'no __next__')
+a = np.array([0,1,2,3,4,5])
+b = np.array([5,4,3,2,1,0])
 
-print(next(s))
-print(next(s))
+ss = []
+ss.append (a)
+ss.append (b)
+
+b[-1] = 111
+
+ss.pop(-1)
+ss.append (b)
+
+print('a', a)
+print('b', b)
+print('ss', ss)

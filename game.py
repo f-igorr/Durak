@@ -1,5 +1,6 @@
 import random
 import numpy as np
+#from collections import namedtuple
 #from numpy.typing import NDArray
 from typing import Iterable, List, Iterator, Tuple, NamedTuple
 
@@ -10,44 +11,48 @@ from net import think
 
 
 
-def deal_cards (HANDS: List[List[str]], KOLODA: List[str], TABLE: List[str], BITS: List[str]) -> Tuple[str,str]:
+def deal_cards (env) -> None: #Tuple[str,str]:
+    env.TABLE.clear()
+    env.BITS.clear()
+    env.LAST_CARD.clear()
+    env.TRUMP.clear()
     flag = 1
     while flag:
-        KOLODA.clear()
-        KOLODA.extend ([card + NO_VISIBLE_CARD for card in FULL_KOLODA])
-        random.shuffle(KOLODA)
-        if KOLODA[-1][SLICE_RANK] == ACE:
+        env.KOLODA.clear()
+        env.KOLODA.extend ([card + NO_VISIBLE_CARD for card in FULL_KOLODA])
+        random.shuffle(env.KOLODA)
+        if env.KOLODA[-1][SLICE_RANK] == ACE:
             continue # если посл карат ТУЗ то пересдача
         else:
             flag = 0
-        TABLE.clear()
-        BITS.clear()
-        for hand in HANDS:
+        for hand in env.HANDS:
             hand.clear()
             for x in range(6):
-                hand.append(KOLODA.pop(0))
+                hand.append(env.KOLODA.pop(0))
             hand.sort()
-        KOLODA[-1] = KOLODA[-1].replace ('N', 'Y')
+        env.KOLODA[-1] = env.KOLODA[-1].replace ('N', 'Y')
+    env.LAST_CARD.append(env.KOLODA[-1])
+    env.TRUMP.append(env.KOLODA[-1][SLICE_MAST])
     if FLAG_PRINT:
         print('\ncards was dealed')
-        print('KOLODA: ', KOLODA)
-        print('last card: ', KOLODA[-1])
-        print('TRUMP: ', KOLODA[-1][SLICE_MAST])
-    return KOLODA[-1], KOLODA[-1][SLICE_MAST] # last_card, trump
+        print('KOLODA: ', env.KOLODA)
+        print('last card: ', env.LAST_CARD)
+        print('TRUMP: ', env.TRUMP)
+    #return env.KOLODA[-1], env.KOLODA[-1][SLICE_MAST] # last_card, trump
 
-def _find_min_trump (hand: List[str], TRUMP: str) -> int:
+def _find_min_trump (hand: List[str], trump: str) -> int:
     min_trump = 100
     for c in hand:
-        if c[SLICE_MAST] == TRUMP:
+        if c[SLICE_MAST] == trump:
             rank = c[SLICE_RANK]
             indx_rank = RANK.index(rank)
             min_trump = min(min_trump, indx_rank)
     return min_trump
 
-def first_attacker (HANDS: List[List[str]],TRUMP: str) -> int:
+def first_attacker (HANDS: List[List[str]],trump: str) -> int:
     list_min_trump = []
     for hand in HANDS:
-        list_min_trump.append(_find_min_trump(hand,TRUMP))
+        list_min_trump.append(_find_min_trump(hand,trump))
     if min(list_min_trump) == 100: # ни у кого нет козыря
         return random.randint(0,len(HANDS)-1)
     else:
@@ -114,18 +119,18 @@ def av_attack_card (hand: List[str],TABLE: List[str]) -> List[str]:
         assert len(av_cards[0]) == 4
     return av_cards
 
-def av_defend_card (hand: List[str], TABLE: List[str], TRUMP: str) -> List[str]:
+def av_defend_card (hand: List[str], TABLE: List[str], trump: str) -> List[str]:
     assert len(TABLE) % 2 == 1, "перед защитой на столе дб нечетное кол карт"
     av_cards = []
     ct = TABLE[-1]
     ct_mast = ct[SLICE_MAST]
     ct_rank = ct[SLICE_RANK]
     for card in hand:
-        if ct_mast == TRUMP:
-            if card[SLICE_MAST] == TRUMP and int(card[SLICE_RANK]) > int(ct_rank):
+        if ct_mast == trump:
+            if card[SLICE_MAST] == trump and int(card[SLICE_RANK]) > int(ct_rank):
                 av_cards.append(card)
         else:
-            if (card[SLICE_MAST] == ct_mast and int(card[SLICE_RANK]) > int(ct_rank)) or card[SLICE_MAST] == TRUMP:
+            if (card[SLICE_MAST] == ct_mast and int(card[SLICE_RANK]) > int(ct_rank)) or card[SLICE_MAST] == trump:
                 av_cards.append(card)
     return av_cards
 
@@ -202,7 +207,7 @@ def play_round_by_net (list_id_hand: List[int], env: NamedTuple) -> bool:
             if count_no_move >= count_attackers:
                 break
         else: # была атака , надо защищаться
-            availble_cards = av_defend_card (env.HANDS[defender], env.TABLE, env.TRUMP)
+            availble_cards = av_defend_card (env.HANDS[defender], env.TABLE, env.TRUMP[0])
             if not availble_cards: # нечем бить
                 if FLAG_PRINT:
                     print(f'defend [{defender}] = no def')
@@ -241,85 +246,57 @@ def get_cards_from_koloda_defender (hands: List[int], HANDS: List[List[str]], KO
         HANDS[hands[1]].append(KOLODA.pop(0))
 
 
+def game(env) -> None:
+    
+    deal_cards (env)
+    # select attacker and defender first time
+    hands_in_game: List[int] = list_hands_in_game (env.HANDS)
+    attacker: int = first_attacker (env.HANDS,env.TRUMP[0])
+    sort_hands_in_game (hands_in_game, attacker)
+    defender: int = hands_in_game[1]
 
-#def defend (hand: List[str],TABLE,TRUMP) -> bool:
-#    av_cards = av_defend_card (hand,TABLE,TRUMP)
-#    if av_cards:
-#        rand_card = random.choice(av_cards)
-#        indx = hand.index(rand_card)
-#        print('attack   = ', TABLE[-1], 'defens = ', hand[indx])
-#        #hand[indx] = hand[indx][SLICE_WO_VISIBLE] + VISIBLE_CARD
-#        #TABLE.append(hand.pop(indx))
-#        put_card_on_table (hand, indx, TABLE)
-#        return True
-#    else:
-#        print('attack   = ', TABLE[-1], 'defens = NONE', av_cards)
-#        return False
+    if FLAG_PRINT:
+        print('\nSTART GAME')
+        print('FULL_KOLODA\n', FULL_KOLODA)
+        print('\nfirst [attacker, defender] =', [attacker, defender])
+        print('hands_in_game                =', hands_in_game)
 
-#def play_round (list_id_hand: List[int],HANDS,TABLE,TRUMP) -> bool:
-#    """ return True if def is ok, False if def is bad """
-#    attacker, defender, count_attackers, seq_attackers = \
-#        make_seq_attaclers (list_id_hand)
-#    print('\n[attacker, defender] =', [attacker, defender])
-#    print(' hands_in_game       =', list_id_hand)
-#    max_attacks: int = _count_max_attacks (HANDS, defender)
-#    for _ in range(max_attacks):
-#        if len(TABLE) == 0: # if first attack
-#            availble_cards = HANDS[attacker]
-#            attack (attacker,HANDS,TABLE) # add card to TABLE
-#            if not defend (HANDS[defender],TABLE,TRUMP): # if def bad
-#                return False
-#        else: # not first attack
-#            count_no_card = 0
-#            for indx_hand in seq_attackers: # endless loop !!!
-#                availble_cards = av_attack_card (HANDS[indx_hand],TABLE)
-#                if availble_cards:
-#                    attack (indx_hand,HANDS,TABLE) # add card to TABLE
-#                    if not defend (HANDS[defender],TABLE,TRUMP): # if def bad
-#                        return False
-#                    else:
-#                        break # OR break ??? (если break то )
-#                else:
-#                    count_no_card += 1
-#                    if count_no_card >= count_attackers: #len(list_attackers):
-#                        break
-#    return True
+    count_round = 0
+    while True and count_round < MAX_LEN_GAME:
+        count_round += 1
+        print_all (env)
 
-#def attack (attacker: int,HANDS,TABLE) -> None:
-#    hand = HANDS[attacker]
-#    if not TABLE: # if TABLE is empty
-#        if len(hand) == 1:
-#            print(f'attack {attacker} = ', hand[0])
-#            #hand[0] = hand[0][SLICE_WO_VISIBLE] + VISIBLE_CARD
-#            #TABLE.append (hand.pop())
-#            put_card_on_table (hand, 0, TABLE)
-#        else:
-#            rnd = random.randint(0,len(hand)-1)
-#            print(f'attack {attacker} = ', hand[rnd])
-#            #hand[rnd] = hand[rnd][SLICE_WO_VISIBLE] + VISIBLE_CARD
-#            #TABLE.append (hand.pop(rnd))
-#            put_card_on_table (hand, rnd, TABLE)
-#    else:
-#        table_rank = [] # list of RANK in TABLE
-#        av_cards = [] # list of available cards to attack
-#        for c in TABLE:
-#            table_rank.append(c[SLICE_RANK])
-#        for card in hand:
-#            if card[SLICE_RANK] in table_rank:
-#                av_cards.append (card)
-#        rnd = random.randint(0,len(av_cards)-1)
-#        print(f'attack {attacker} = ', av_cards[rnd])
-#        indx = hand.index(av_cards[rnd])
-#        #hand[indx] = hand[indx][SLICE_WO_VISIBLE] + VISIBLE_CARD
-#        #TABLE.append (hand.pop(indx))
-#        put_card_on_table (hand, indx, TABLE)
+        #input('press enter for continue')
 
-#def _check_posibility_attack (hand: List[str],TABLE) -> bool:
-#    assert len(TABLE) > 0, 'ERROR TABLE EMPTY !!!'
-#    table_rank: List[str] = [] # list of RANK in TABLE
-#    for c in TABLE:
-#        table_rank.append(c[SLICE_RANK])
-#    for card in hand:
-#        if card[SLICE_RANK] in table_rank:
-#            return True
-#    return False
+        result_round = play_round_by_net (hands_in_game, env)
+
+        get_cards_from_koloda_attackers (hands_in_game, env.HANDS, env.KOLODA)
+        if result_round: # True (def OK)
+            env.BITS.extend(env.TABLE)
+            env.TABLE.clear()
+            get_cards_from_koloda_defender(hands_in_game,env.HANDS,env.KOLODA)
+        else: # False (def is bad)
+            env.HANDS[defender].extend(env.TABLE)
+            env.TABLE.clear()
+        new_hands_in_game = list_hands_in_game (env.HANDS)
+        # check for end game
+        if len(new_hands_in_game) == 1:
+            #print(f'GAME OVER. DURAK is hand_{new_hands_in_game[0]}')
+            env.LIST_LOST[new_hands_in_game[0]] += 1
+            break
+        elif len(new_hands_in_game) == 0:
+            #print('GAME OVER. DRAW !')
+            break
+        attacker = change_attacker (hands_in_game, new_hands_in_game, result_round)
+        hands_in_game = new_hands_in_game
+        sort_hands_in_game (hands_in_game, attacker)
+        defender = hands_in_game[1]
+    if FLAG_PRINT:
+        print('\n==== FINAL REULT ========')
+        print('count_round = ', count_round)
+        print_all(env)
+    return None
+
+def set_games(env):
+    while sum(env.LIST_LOST) < LIMIT_GAMES or env.LIST_LOST.count(min(env.LIST_LOST)) > 2:
+        game(env)

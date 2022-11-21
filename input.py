@@ -62,9 +62,9 @@ def make_input (my_indx: int, env: NamedTuple) -> NDArray:
     # карты в отбое
     bin_bits = convert_listcard_to_binlist (env.BITS)
     # послед карта в колоде
-    bin_last_card = convert_listcard_to_binlist ([env.LAST_CARD])
+    bin_last_card = convert_listcard_to_binlist (env.LAST_CARD)
     # козырь
-    bin_trump = convert_mastcard_to_binlist (env.TRUMP)
+    bin_trump = convert_mastcard_to_binlist (env.TRUMP[0])
 
     inpt.extend (bin_qty_in_hands)
     inpt.extend (bin_qty_table)

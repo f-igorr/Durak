@@ -1,95 +1,64 @@
-from collections import namedtuple
 from typing import List
+from collections import namedtuple
+import numpy as np
 
-from game import  deal_cards, first_attacker, print_all, list_hands_in_game, play_round_by_net,\
-    get_cards_from_koloda_attackers, get_cards_from_koloda_defender, change_attacker, sort_hands_in_game
-from config import * 
-from net import init_list_brains
+from config import SHAPE_LIST_FOR_BRAINS
+from net import init_brain, print_brain
+from game import set_games
+from genetika import mutation, crossover, create_new_population
 
+# cards 
+KOLODA: List[str] = [] # колода карт которые еще не в игре (не взяты игроками)
+TABLE : List[str] = [] # карты текущего хода
+BITS  : List[str] = [] # вышедшие карты 
+LAST_CARD: List[str] = []
+TRUMP: List[str] = []
 
-count_round_max = 200
+# list of hands
+hand_0 : List[str] = []
+hand_1 : List[str] = []
+hand_2 : List[str] = []
+hand_3 : List[str] = []
+HANDS = [hand_0, hand_1, hand_2, hand_3]
+LIST_LOST = [0 for h in HANDS] # лист подсчета дураков
 
-def main():
-    # ============================================
-    hand_0 : List[str] = []
-    hand_1 : List[str] = []
-    hand_2 : List[str] = []
-    hand_3 : List[str] = []
-    HANDS = [hand_0, hand_1, hand_2, hand_3]
+# first inition brains
+BRAINS_ATTACK  = [ init_brain (SHAPE_LIST_FOR_BRAINS) for x in HANDS]
+BRAINS_DEFENSE = [ init_brain (SHAPE_LIST_FOR_BRAINS) for x in HANDS]
+assert np.array(BRAINS_ATTACK, dtype=object).shape == ( len(HANDS), len(SHAPE_LIST_FOR_BRAINS), 2)
 
-    KOLODA: List[str] = [] # колода карт которые еще не в игре (не взяты игроками)
-    TABLE : List[str] = [] # карты текущего хода
-    BITS  : List[str] = [] # вышедшие карты 
-    # ============================================
-    # START GAME
-    LAST_CARD, TRUMP = deal_cards (HANDS, KOLODA, TABLE, BITS)
-    # create and init brains 
-    BRAINS_ATTACK  = init_list_brains (len(HANDS), SHAPE_LIST_FOR_BRAINS)
-    BRAINS_DEFENSE = init_list_brains (len(HANDS), SHAPE_LIST_FOR_BRAINS)
+# brains for check learning
+brains_attack_random  = [ init_brain (SHAPE_LIST_FOR_BRAINS) for x in HANDS]
+brains_defense_random = [ init_brain (SHAPE_LIST_FOR_BRAINS) for x in HANDS]
+assert np.array(brains_attack_random, dtype=object).shape == ( len(HANDS), len(SHAPE_LIST_FOR_BRAINS), 2)
 
-    # create namedTuple to pass all params together to functions
-    env = namedtuple ('env', ['HANDS','KOLODA','TABLE','BITS','LAST_CARD','TRUMP','BRAINS_ATTACK','BRAINS_DEFENSE'])
-    ENV = env( HANDS,KOLODA,TABLE,BITS,LAST_CARD,TRUMP,BRAINS_ATTACK,BRAINS_DEFENSE )
+# create namedTuple to pass all params together to functions
+env = namedtuple ('env', ['HANDS','KOLODA','TABLE','BITS','LAST_CARD','TRUMP','BRAINS_ATTACK','BRAINS_DEFENSE','LIST_LOST'])
+ENV       = env( HANDS,KOLODA,TABLE,BITS,LAST_CARD,TRUMP,BRAINS_ATTACK,BRAINS_DEFENSE,LIST_LOST )
+env_check = env( HANDS,KOLODA,TABLE,BITS,LAST_CARD,TRUMP,brains_attack_random,brains_defense_random,LIST_LOST )
 
-    # select attacker and defender first time
-    hands_in_game: List[int] = list_hands_in_game (HANDS)
-    attacker: int = first_attacker (HANDS,TRUMP)
-    sort_hands_in_game (hands_in_game, attacker)
-    defender: int = hands_in_game[1]
+NUM_GENERATIONS = 10000 # кол-во циклов отбора
 
-    if FLAG_PRINT:
-        print('\nSTART GAME')
-        print('FULL_KOLODA\n', FULL_KOLODA)
-        print('\nfirst [attacker, defender] =', [attacker, defender])
-        print('hands_in_game                =', hands_in_game)
+for num in range(NUM_GENERATIONS):
+    if num == 0: # first generation
+        pass
+    else:
+        pass
+        create_new_population (ENV) # отбор. скрещ. мутация = новые игроки (новые мозги)
+    LIST_LOST.clear()
+    LIST_LOST.extend([0 for h in HANDS])
+    #print('================================')
+    #print('  GAME mode 1')
+    set_games (ENV) # несколько игр с пост мозгами и разными раздачами карт = победители
+    #print('result GAME mode 1', LIST_LOST)
+    #print('\nGAME mode check')
+    brains_attack_random.pop(-1)
+    brains_attack_random.append(BRAINS_ATTACK[0])
+    brains_defense_random.pop(-1)
+    brains_defense_random.append(BRAINS_DEFENSE[0])
+    LIST_LOST.clear()
+    LIST_LOST.extend([0 for h in HANDS])
+    set_games (env_check) 
+    print(f'[{num}]', '  *******  ' * LIST_LOST[-1])
 
-    count_round = 0
-    while True and count_round < count_round_max:
-        count_round += 1
-        #print_all (ENV) #(HANDS,KOLODA,TABLE,BITS,TRUMP)
-
-        #input('press enter for continue')
-
-        result_round = play_round_by_net (hands_in_game, ENV)
-
-        get_cards_from_koloda_attackers (hands_in_game,HANDS,KOLODA)
-        if result_round: # True (def OK)
-            BITS.extend(TABLE)
-            TABLE.clear()
-            get_cards_from_koloda_defender(hands_in_game,HANDS,KOLODA)
-        else: # False (def is bad)
-            HANDS[defender].extend(TABLE)
-            TABLE.clear()
-        new_hands_in_game = list_hands_in_game (HANDS)
-        # check for end game
-        if len(new_hands_in_game) == 1:
-            #print(f'GAME OVER. DURAK is hand_{new_hands_in_game[0]}')
-            break
-        elif len(new_hands_in_game) == 0:
-            #print('GAME OVER. DRAW !')
-            break
-        attacker = change_attacker (hands_in_game, new_hands_in_game, result_round)
-        hands_in_game = new_hands_in_game
-        sort_hands_in_game (hands_in_game, attacker)
-        defender = hands_in_game[1]
-    if FLAG_PRINT:
-        print('\n==== FINAL REULT ========')
-        print('count_round = ', count_round)
-        print_all(ENV)
-    return count_round
-
-count_list = []
-for g in range(20000):
-    print(g)
-    count_list.append( main() )
-
-max_less_limit = [c for c in count_list if c != count_round_max]
-
-print('max < limit', max(max_less_limit))
-print('abs max', max(count_list))
-print('len all', len(count_list))
-print('len max_less_limit', len(max_less_limit))
-
-#print('\n==== FINAL REULT ========')
-#print('count_round = ', count_round)
-#print_all(ENV)
+print('result GAME mode check', LIST_LOST)
