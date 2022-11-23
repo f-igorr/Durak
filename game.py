@@ -7,7 +7,7 @@ from typing import Iterable, List, Iterator, Tuple, NamedTuple
 from config import *
 from func import circle_generator
 from input import make_input
-from net import think
+from net import think, tanh_with_beta, think2
 
 
 
@@ -144,7 +144,7 @@ def think_and_attack (id_hand: int, env: NamedTuple) -> None:
     # находим мой атакующий мозг
     brain = env.BRAINS_ATTACK [id_hand] #
     # прогнать входной вектор через мозг 
-    id_card, need_move = think (env.HANDS[id_hand], input_array, brain, activate=np.tanh) # индекс в фулл колоде и решение надо ли делать ход
+    id_card, need_move = think2 (env.HANDS[id_hand], input_array, brain) #, activate= tanh_with_beta) # индекс в фулл колоде и решение надо ли делать ход
     # делаем ход
     need_move = 1 if not len(env.TABLE) else need_move # если стол пуст надо делать ход в любом случае
     if need_move:
@@ -166,7 +166,7 @@ def think_and_defend (id_hand: int, env: NamedTuple) -> None:
     # находим мой атакующий мозг
     brain = env.BRAINS_DEFENSE [id_hand] #
     # прогнать входной вектор через мозг 
-    id_card, need_move = think (env.HANDS[id_hand], input_array, brain, activate=np.tanh) # индекс в фулл колоде и решение надо ли делать ход
+    id_card, need_move = think2 (env.HANDS[id_hand], input_array, brain) #, activate= tanh_with_beta) # индекс в фулл колоде и решение надо ли делать ход
     # делаем ход
     need_move = 1 if (len(env.KOLODA) + len(env.HANDS[id_hand])) == 1 else need_move # если в колоде уже нет карт и у защитника послед карта то надо бить в любом случае
     if need_move:

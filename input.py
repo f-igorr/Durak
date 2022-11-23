@@ -1,8 +1,10 @@
 from typing import List, NamedTuple
-from func import convert_int_to_list_bin, convert_listcard_to_binlist, circle_gen_with_first, convert_mastcard_to_binlist
-from config import *
 import numpy as np
 from numpy.typing import NDArray
+
+from func import convert_listcard_to_binlist, circle_gen_with_first, convert_mastcard_to_binlist, save_bin_int_by_str
+from config import *
+
 
 # кодируем входные данные для НС
 # всё кодируем в 0 или 1
@@ -27,7 +29,9 @@ from numpy.typing import NDArray
 # масть козырей: длина = 4 * 1 = 4
 
 
-# ДОБАВИТЬ В ВХ ВЕКТОР ЛИСТ МОИХ КАРТ , КОТРЫМИ ВОЗМОЖЕН ХОД ?????
+# готовый словарь перевода числе в бинарный лист
+dict_bin_int = save_bin_int_by_str (LEN_FULL_KOLODA)
+
 
 
 
@@ -42,11 +46,11 @@ def make_input (my_indx: int, env: NamedTuple) -> NDArray:
     bin_qty_in_hands = []
     for _ in indx_hands:
         i = next(circle_seq_ind_hands)
-        bin_qty_in_hands.extend (convert_int_to_list_bin (len(env.HANDS[i]))) #  6 = [0,0,0,1,1,0]
+        bin_qty_in_hands.extend (dict_bin_int[len(env.HANDS[i])]) # convert_int_to_list_bin (len(env.HANDS[i]))) #  6 = [0,0,0,1,1,0]
     # кол-во карт на столе, в отбое, в колоде
-    bin_qty_table  = convert_int_to_list_bin (len(env.TABLE))
-    bin_qty_bits   = convert_int_to_list_bin (len(env.BITS))
-    bin_qty_koloda = convert_int_to_list_bin (len(env.KOLODA))
+    bin_qty_table  = dict_bin_int[len(env.TABLE)]  #convert_int_to_list_bin (len(env.TABLE))
+    bin_qty_bits   = dict_bin_int[len(env.BITS)]  #convert_int_to_list_bin (len(env.BITS))
+    bin_qty_koloda = dict_bin_int[len(env.KOLODA)]  #convert_int_to_list_bin (len(env.KOLODA))
     # мои карты и известные карты каждого игрока
     circle_seq_ind_hands = circle_gen_with_first (indx_hands, my_indx) # круговая последов-ть индексов рук
     bin_hands = []

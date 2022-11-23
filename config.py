@@ -37,6 +37,7 @@ SHAPE_DENSE_2 = (SIZE_D2 , SIZE_D1) # part of brain
 SHAPE_OUT     = (SIZE_OUT, SIZE_D2) # part of brain
 SHAPE_LIST_FOR_BRAINS = [SHAPE_DENSE_1, SHAPE_DENSE_2, SHAPE_OUT]
 
+BETA_TANH = 0.5
 
 # ==========  OTHERS  =======================
 
